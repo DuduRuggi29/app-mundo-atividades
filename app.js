@@ -1,29 +1,25 @@
-const chatBox = document.getElementById('chat-box');
-const userInput = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-
 const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// System prompt forces kid-friendly tone and format for images
-const SYSTEM_PROMPT = `
-Você é uma IA amiga, muito alegre, carinhosa e voltada para crianças. 
-Seu objetivo é ajudar as crianças a aprenderem rapidamente, ensinarem caligrafia, darem dicas de estudo e serem a melhor companhia educativa.
-Fale de forma simples, animada e use muitos emojis!
+// --- Tab Navigation Logic ---
+const navBtns = document.querySelectorAll('.nav-btn');
+const tabContents = document.querySelectorAll('.tab-content');
 
-REGRAS IMPORTANTES:
-1. Se a criança pedir para desenhar algo para colorir (ex: "faz um desenho de um cachorro", "quero pintar um dinossauro"), você deve responder de forma animada e colocar a exata tag a seguir na sua resposta para gerar o desenho: [DRAWING: descrição em inglês do desenho]
-Exemplo de resposta sua: "Claro! Aqui está um lindo cachorrinho para você colorir! [DRAWING: cute puppy dog]"
-A tag [DRAWING: ...] é interpretada pelo sistema para mostrar a imagem. Dê a descrição apenas em INGLÊS dentro dos colchetes, pois a IA geradora de imagens entende melhor o inglês. Siga as palavras chaves "coloring page, line art, black and white" indiretamente, eu adicionarei isso no código, então apenas diga o sujeito dentro dos colchetes. Por exemplo: [DRAWING: cute dinosaur]. NUNCA falhe ao colocar esta tag se pedirem desenho.
-2. Seja sempre positivo e encorajador.
-3. Se fizerem perguntas sobre outros assuntos, responda de forma educativa e infantil.
-`;
+navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all buttons and tabs
+        navBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(t => t.classList.remove('active-tab'));
 
-let messageHistory = [
-    { role: "system", content: SYSTEM_PROMPT }
-];
+        // Add active class to clicked
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active-tab');
+    });
+});
 
-async function callGroqAPI(messages) {
+// --- API Helper ---
+async function callGroqAPI(messages, max_tokens = 1024) {
     try {
         const response = await fetch(GROQ_API_URL, {
             method: 'POST',
@@ -32,115 +28,162 @@ async function callGroqAPI(messages) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "llama3-8b-8192", // Using a fast, standard model present in Groq
+                model: "llama3-8b-8192", // Fast logic
                 messages: messages,
                 temperature: 0.7,
-                max_tokens: 1024
+                max_tokens: max_tokens
             })
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("API Error:", errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error("API Fails");
         const data = await response.json();
         return data.choices[0].message.content;
     } catch (error) {
-        console.error("Error communicating with Groq API:", error);
-        return "Ops! Tivemos um probleminha mágico. Você pode perguntar de novo? 🪄✨";
+        console.error("Groq Error:", error);
+        return "Ops! Ocorreu um erro mágico. Tente de novo! ✨";
     }
 }
 
-function processContentForImages(text) {
-    // Look for [DRAWING: description] tag
-    const regex = /\[DRAWING:\s*(.*?)\]/gi;
-    return text.replace(regex, (match, description) => {
-        const prmt = `coloring page of ${description}, thick black and white line art, for kids, highly detailed, no shading, clean lines, white background, no text`;
-        const encodedPrompt = encodeURIComponent(prmt);
-        const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true`;
-        return `\n\n<img src="${imgUrl}" alt="Desenho para colorir: ${description}" onload="scrollToBottom()">\n\n`;
-    });
-}
-
-function appendMessage(role, content) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', role === 'user' ? 'user-message' : 'ai-message');
-
-    const avatarUrl = role === 'user' 
-        ? "https://api.dicebear.com/7.x/bottts/svg?seed=Lucky&backgroundColor=transparent"
-        : "https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4";
-
-    // Format content with markdown and parse image tags
-    let formattedContent = role === 'ai' ? processContentForImages(content) : content;
-    // Uses marked library for basic markdown parsing for bold, lists, etc.
-    if(role === 'ai') formattedContent = marked.parse(formattedContent);
-
-    messageDiv.innerHTML = `
-        <img src="${avatarUrl}" alt="${role} Avatar" class="avatar">
-        <div class="message-content">
-            ${role === 'user' ? formattedContent : formattedContent}
-        </div>
-    `;
-
-    chatBox.appendChild(messageDiv);
-    scrollToBottom();
-}
-
-function appendTypingIndicator() {
+function appendTypingIndicator(boxId) {
+    const box = document.getElementById(boxId);
     const typingDiv = document.createElement('div');
-    typingDiv.id = 'typing-indicator';
+    typingDiv.id = 'typing-' + boxId;
     typingDiv.classList.add('message', 'ai-message');
     typingDiv.innerHTML = `
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4" alt="AI Avatar" class="avatar">
-        <div class="typing-indicator">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Teacher&backgroundColor=b6e3f4" class="avatar">
+        <div class="message-content typing-indicator">
             <span></span><span></span><span></span>
         </div>
     `;
-    chatBox.appendChild(typingDiv);
-    scrollToBottom();
+    box.appendChild(typingDiv);
+    box.scrollTop = box.scrollHeight;
 }
 
-function removeTypingIndicator() {
-    const typingDiv = document.getElementById('typing-indicator');
-    if (typingDiv) {
-        typingDiv.remove();
-    }
+function removeTypingIndicator(boxId) {
+    const typingDiv = document.getElementById('typing-' + boxId);
+    if (typingDiv) typingDiv.remove();
 }
 
-function scrollToBottom() {
-    chatBox.scrollTop = chatBox.scrollHeight;
+function appendChatMessage(boxId, role, content, avatarSeed, avatarBg) {
+    const box = document.getElementById(boxId);
+    const div = document.createElement('div');
+    div.classList.add('message', role === 'user' ? 'user-message' : 'ai-message');
+    
+    let htmlContent = role === 'user' ? content : marked.parse(content);
+
+    const avatarUrl = role === 'user' 
+        ? "https://api.dicebear.com/7.x/bottts/svg?seed=Lucky&backgroundColor=transparent"
+        : `https://api.dicebear.com/7.x/bottts/svg?seed=${avatarSeed}&backgroundColor=${avatarBg}`;
+
+    div.innerHTML = `
+        <img src="${avatarUrl}" class="avatar">
+        <div class="message-content">${htmlContent}</div>
+    `;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
 
-async function handleSend() {
-    const text = userInput.value.trim();
+
+// --- 1. Professor IA Logic ---
+const profBox = 'professor-chat-box';
+const profInput = document.getElementById('professor-input');
+const profSendBtn = document.getElementById('professor-send-btn');
+
+let professorHistory = [{
+    role: "system",
+    content: "Você é um Professor de escola super amigável, encorajador e voltado para crianças. Explique qualquer conceito de forma simples e divertida, usando poucos emojis. NUNCA gere imagens aqui."
+}];
+
+async function handleProfessorSend() {
+    const text = profInput.value.trim();
     if (!text) return;
+    profInput.value = '';
 
-    // Reset input
-    userInput.value = '';
+    appendChatMessage(profBox, 'user', text);
+    professorHistory.push({ role: "user", content: text });
+    
+    appendTypingIndicator(profBox);
+    const response = await callGroqAPI(professorHistory);
+    removeTypingIndicator(profBox);
 
-    // Render User Message
-    appendMessage('user', text);
-    messageHistory.push({ role: "user", content: text });
-
-    // Show AI typing
-    appendTypingIndicator();
-
-    // Fetch response
-    const aiResponse = await callGroqAPI(messageHistory);
-
-    // Remove typing
-    removeTypingIndicator();
-
-    // Track AI msg for future context
-    messageHistory.push({ role: "assistant", content: aiResponse });
-
-    // Render AI message
-    appendMessage('ai', aiResponse);
+    professorHistory.push({ role: "assistant", content: response });
+    appendChatMessage(profBox, 'ai', response, 'Teacher', 'b6e3f4');
 }
 
-sendBtn.addEventListener('click', handleSend);
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleSend();
-});
+profSendBtn.addEventListener('click', handleProfessorSend);
+profInput.addEventListener('keypress', e => e.key === 'Enter' && handleProfessorSend());
+
+
+// --- 2. Calligraphy IA Logic ---
+const caliBox = 'calligraphy-chat-box';
+const caliInput = document.getElementById('calligraphy-input');
+const caliSendBtn = document.getElementById('calligraphy-send-btn');
+
+let calligraphyHistory = [{
+    role: "system",
+    content: "Você é um Mestre da Caligrafia infantil. Sempre que a criança disser uma palavra ou letra, primeiro anime-a e depois escreva as palavras em formato de destaque. Envolva as palavras que devem ser copiadas por ela usando o formato de blockquote do markdown (ou seja, começando a linha com '> '). Exemplo:\n\n> A B C D\n\n> Bola\n\nFaça lições curtas e visualmente bonitas."
+}];
+
+async function handleCalligraphySend() {
+    const text = caliInput.value.trim();
+    if (!text) return;
+    caliInput.value = '';
+
+    appendChatMessage(caliBox, 'user', text);
+    calligraphyHistory.push({ role: "user", content: text });
+    
+    appendTypingIndicator(caliBox);
+    const response = await callGroqAPI(calligraphyHistory);
+    removeTypingIndicator(caliBox);
+
+    calligraphyHistory.push({ role: "assistant", content: response });
+    appendChatMessage(caliBox, 'ai', response, 'Pen', 'f4b6dc');
+}
+
+caliSendBtn.addEventListener('click', handleCalligraphySend);
+caliInput.addEventListener('keypress', e => e.key === 'Enter' && handleCalligraphySend());
+
+
+// --- 3. Drawings Gallery Logic ---
+const drawInput = document.getElementById('drawings-input');
+const drawSendBtn = document.getElementById('drawings-send-btn');
+const drawLoading = document.getElementById('drawing-loading');
+const drawGallery = document.getElementById('drawing-gallery');
+
+async function handleDrawingGenerate() {
+    const subject = drawInput.value.trim();
+    if (!subject) return;
+    
+    // We don't append chat here, just generate in the gallery directly.
+    drawInput.value = '';
+    drawLoading.classList.remove('hidden');
+
+    // We ask Groq to translate the childish prompt to a descriptive image prompt
+    const promptMessage = [
+        { role: "system", content: "You strictly output ONLY English descriptions of the subject given by the user, formatted exactly as a comma separated list of visual keywords. Ignore all conversational filler. Emphasize cute, kid-friendly." },
+        { role: "user", content: `Quero colorir: ${subject}` }
+    ];
+
+    const keywords = await callGroqAPI(promptMessage, 50); // fast and short
+
+    // Final Prompt for Pollinations
+    const finalPollinationsPrompt = `coloring page of ${keywords}, thick black and white line art, for kids, cute styling, highly detailed, clean lines, white background, no text`;
+    const encodedPrompt = encodeURIComponent(finalPollinationsPrompt);
+    const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true`;
+
+    drawLoading.classList.add('hidden');
+
+    // Create Gallery Card
+    const card = document.createElement('div');
+    card.className = 'drawing-card';
+    card.innerHTML = `
+        <img src="${imgUrl}" alt="${subject}">
+        <p>${subject}</p>
+    `;
+    
+    // Insert at top
+    drawGallery.prepend(card);
+}
+
+drawSendBtn.addEventListener('click', handleDrawingGenerate);
+drawInput.addEventListener('keypress', e => e.key === 'Enter' && handleDrawingGenerate());
