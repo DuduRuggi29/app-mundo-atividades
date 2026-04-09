@@ -464,9 +464,30 @@ body {
         border-top: 2px solid white;
         z-index: 999;
         padding: 0;
+        background: rgba(255,255,255,0.95);
     }
     
-    .sidebar-header { display: none; }
+    .sidebar-header { 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        position: fixed;
+        top: 0; left: 0; width: 100%;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(15px);
+        padding: 10px 15px;
+        z-index: 1000;
+        border-bottom: 2px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-header .logo-icon { display: none; }
+    .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+    
+    .content-area {
+        padding-top: 140px; /* Space for top header */
+    }
     
     .nav-links {
         flex-direction: row; justify-content: space-around;
@@ -487,12 +508,10 @@ body {
     .nav-btn.active { color: var(--btn-color); }
     
     .sidebar-footer {
-        position: fixed; top: 10px; right: 10px; padding: 0;
-        z-index: 1000;
+        display: none; /* Moved top */
     }
     
-    .download-btn-side span { display: none; }
-    .download-btn-side { padding: 12px; font-size: 1.2rem; border-radius: 50%; }
+    .download-btn-side { width: 100%; padding: 12px; font-size: 1rem; border-radius: 20px; }
 
     .help-item { flex-direction: column; text-align: center; }
     
