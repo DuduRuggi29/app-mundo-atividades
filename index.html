@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo das Atividades - IA Amiga</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Floating bubbles background -->
+        <ul class="bg-bubbles">
+            <li></li><li></li><li></li><li></li><li></li>
+            <li></li><li></li><li></li><li></li><li></li>
+        </ul>
+
+        <header class="app-header">
+            <div class="logo-container">
+                <i class="fa-solid fa-shapes logo-icon"></i>
+                <h1>Mundo das Atividades</h1>
+            </div>
+            <a href="https://www.transfernow.net/dl/20260409HPtNKcC1" target="_blank" class="download-btn">
+                <i class="fa-solid fa-cloud-arrow-down"></i> Baixar 2000+ Atividades!
+            </a>
+        </header>
+
+        <main class="chat-container">
+            <div class="chat-box" id="chat-box">
+                <div class="message ai-message">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4" alt="AI Avatar" class="avatar">
+                    <div class="message-content">
+                        Olá! Eu sou sua IA ajudante. Posso te ensinar caligrafia, dar dicas rápidas de aprendizado e até criar desenhos lindos para você colorir! O que vamos aprender hoje?
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Digite sua pergunta ou peça um desenho..." autocomplete="off">
+                    <button id="send-btn" class="send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
