@@ -90,8 +90,11 @@ body {
 
 .sidebar-header h2 {
     font-family: var(--font-heading);
-    font-size: 1.4rem;
-    color: var(--text-color);
+    font-size: 1.6rem;
+    color: var(--btn-color);
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 0px rgba(255,154,162,0.3);
 }
 
 .nav-links {
@@ -131,30 +134,37 @@ body {
     box-shadow: 0 4px 15px rgba(255, 218, 193, 0.6);
 }
 
-.sidebar-footer {
-    padding: 20px;
-}
-
 .download-btn-side {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-color: #6EDB8F;
-    color: white;
+    background: linear-gradient(45deg, #FF9AA2, #ffb8bf);
+    color: white !important;
     text-decoration: none;
-    padding: 15px;
-    border-radius: 20px;
+    padding: 20px;
+    border-radius: 25px;
     font-family: var(--font-heading);
-    font-size: 1rem;
+    font-size: 1.2rem;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(110, 219, 143, 0.4);
+    box-shadow: 0 8px 25px rgba(255, 154, 162, 0.6);
     text-align: center;
+    border: 3px solid white;
 }
 
 .download-btn-side:hover {
-    background-color: #55C97A;
-    transform: translateY(-3px) scale(1.02);
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(255, 154, 162, 0.8);
+}
+
+.pulse-btn {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 8px 25px rgba(255, 154, 162, 0.6); }
+    50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(255, 154, 162, 0.9); }
+    100% { transform: scale(1); box-shadow: 0 8px 25px rgba(255, 154, 162, 0.6); }
 }
 
 /* MAIN CONTENT AREA */
