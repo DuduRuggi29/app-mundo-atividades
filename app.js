@@ -28,7 +28,7 @@ async function callGroqAPI(messages, max_tokens = 1024) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "llama3-8b-8192", // Fast logic
+                model: "llama-3.1-8b-instant", // Fast logic
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: max_tokens
